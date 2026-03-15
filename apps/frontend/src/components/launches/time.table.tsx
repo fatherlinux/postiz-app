@@ -51,17 +51,6 @@ export const TimeTable: FC<{
   usePreventWindowUnload(true);
 
   const askClose = useCallback(async () => {
-    if (
-      !(await deleteDialog(
-        t(
-          'are_you_sure_you_want_to_close_the_window',
-          'Are you sure you want to close the window?'
-        ),
-        t('yes_close', 'Yes, close')
-      ))
-    ) {
-      return;
-    }
     modal.closeAll();
   }, []);
 
