@@ -1,31 +1,15 @@
 import { FC, ReactNode, useEffect, useRef } from 'react';
 import { useModals } from '@gitroom/frontend/components/layout/new-modal';
-import { deleteDialog } from '@gitroom/react/helpers/delete.dialog';
-import { useT } from '@gitroom/react/translation/get.transation.service.client';
 
 export const ModalWrapperComponent: FC<{
   title: string;
   children: ReactNode;
   customClose?: () => void;
   ask?: boolean;
-}> = ({ title, children, ask, customClose }) => {
+}> = ({ title, children, customClose }) => {
   const ref = useRef<HTMLDivElement>(null);
   const modal = useModals();
-  const t = useT();
   const closeModal = async () => {
-    if (
-      ask &&
-      !(await deleteDialog(
-        t(
-          'are_you_sure_you_want_to_close_the_window',
-          'Are you sure you want to close the window?'
-        ),
-        t('yes_close', 'Yes, close')
-      ))
-    ) {
-      return;
-    }
-
     if (customClose) {
       customClose();
       return;
