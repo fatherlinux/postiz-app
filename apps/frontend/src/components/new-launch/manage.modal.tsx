@@ -159,21 +159,11 @@ export const ManageModal: FC<AddEditModalProps> = (props) => {
       return;
     }
 
-    if (
-      await deleteDialog(
-        t(
-          'are_you_sure_you_want_to_close_this_modal_all_data_will_be_lost',
-          'Are you sure you want to close this modal? (all data will be lost)'
-        ),
-        t('yes_close_it', 'Yes, close it!')
-      )
-    ) {
-      if (customClose) {
-        customClose();
-        return;
-      }
-      modal.closeAll();
+    if (customClose) {
+      customClose();
+      return;
     }
+    modal.closeAll();
   }, [activateExitButton, dummy]);
 
   const deletePost = useCallback(async () => {
