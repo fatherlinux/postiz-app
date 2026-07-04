@@ -23,8 +23,11 @@ export class IntegrationListTool implements AgentToolInterface {
           z.object({
             id: z.string(),
             name: z.string(),
+            disabled: z.boolean(),
             picture: z.string(),
             platform: z.string(),
+            display: z.string().nullable(),
+            type: z.string(),
           })
         ),
       }),
