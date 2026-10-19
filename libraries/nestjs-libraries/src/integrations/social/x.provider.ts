@@ -52,6 +52,14 @@ export class XProvider extends SocialAbstract implements SocialProvider {
       };
     }
 
+    if (body.includes('credits-depleted')) {
+      return {
+        type: 'bad-body',
+        value:
+          'X API credits depleted - add credits in the X Developer Console (console.x.com)',
+      };
+    }
+
     if (body.includes('usage-capped')) {
       return {
         type: 'bad-body',
