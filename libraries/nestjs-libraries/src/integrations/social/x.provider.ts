@@ -162,6 +162,15 @@ export class XProvider extends SocialAbstract implements SocialProvider {
           'There is a problem posting, please edit your post and check character count and media attachments',
       };
     }
+    // X pay-per-use returns 402 with problem type credits-depleted when the
+    // developer account balance is empty; unmatched, it surfaced as Unknown Error.
+    if (body.includes('credits-depleted')) {
+      return {
+        type: 'bad-body',
+        value:
+          'X API credits depleted - add credits in the X Developer Console (console.x.com)',
+      };
+    }
     if (body.includes('Service Unavailable')) {
       return {
         type: 'retry',
