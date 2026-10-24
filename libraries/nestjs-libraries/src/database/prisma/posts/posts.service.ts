@@ -38,6 +38,8 @@ import { Readable } from 'stream';
 import { resolve, sep } from 'path';
 import { OpenaiService } from '@gitroom/nestjs-libraries/openai/openai.service';
 dayjs.extend(utc);
+import { slotDayFilter } from '@gitroom/nestjs-libraries/database/prisma/posts/slot.weekdays';
+const slotDayAllowed = slotDayFilter();
 import * as Sentry from '@sentry/nestjs';
 import { TemporalService } from 'nestjs-temporal-core';
 import { TypedSearchAttributes } from '@temporalio/common';
@@ -1578,11 +1580,9 @@ export class PostsService {
         .format('YYYY-MM-DDTHH:mm:00');
     }
 
-    const list = await this._postRepository.getPostsCountsByDates(
-      orgId,
-      times,
-      date
-    );
+    const list = (
+      await this._postRepository.getPostsCountsByDates(orgId, times, date)
+    ).filter((time) => slotDayAllowed(date.clone().add(time, 'minutes').toDate()));
 
     if (!list.length) {
       return this.findFreeDateTimeRecursive(
