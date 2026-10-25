@@ -1544,7 +1544,13 @@ export class PostsService {
     return this._postRepository.findPopularPosts(category, topic);
   }
 
-  async findFreeDateTime(orgId: string, integrationId?: string) {
+  // `after` (crunchtools): return the first free slot strictly after this
+  // instant instead of after now, so a client can step through open slots.
+  async findFreeDateTime(
+    orgId: string,
+    integrationId?: string,
+    after?: dayjs.Dayjs
+  ) {
     const findTimes = await this._integrationService.findFreeDateTime(
       orgId,
       integrationId
@@ -1552,8 +1558,9 @@ export class PostsService {
     return this.findFreeDateTimeRecursive(
       orgId,
       findTimes.length ? findTimes : [120, 400, 700],
-      dayjs.utc().startOf('day'),
-      0
+      (after || dayjs.utc()).utc().startOf('day'),
+      0,
+      after
     );
   }
 
@@ -1570,7 +1577,8 @@ export class PostsService {
     orgId: string,
     times: number[],
     date: dayjs.Dayjs,
-    daysChecked: number
+    daysChecked: number,
+    after?: dayjs.Dayjs
   ): Promise<string> {
     // stop searching after a year so an empty times list can never recurse forever
     if (daysChecked > 365) {
@@ -1582,14 +1590,18 @@ export class PostsService {
 
     const list = (
       await this._postRepository.getPostsCountsByDates(orgId, times, date)
-    ).filter((time) => slotDayAllowed(date.clone().add(time, 'minutes').toDate()));
+    ).filter((time) => {
+      const slot = date.clone().add(time, 'minutes');
+      return slotDayAllowed(slot.toDate()) && (!after || slot.isAfter(after));
+    });
 
     if (!list.length) {
       return this.findFreeDateTimeRecursive(
         orgId,
         times,
         date.add(1, 'day'),
-        daysChecked + 1
+        daysChecked + 1,
+        after
       );
     }
 

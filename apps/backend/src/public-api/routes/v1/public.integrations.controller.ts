@@ -59,6 +59,8 @@ import { GetOrgActivityDto } from '@gitroom/nestjs-libraries/dtos/analytics/get.
 import { ResetCreditsDto } from '@gitroom/nestjs-libraries/dtos/billing/reset.credits.dto';
 import { SubscriptionService } from '@gitroom/nestjs-libraries/database/prisma/subscriptions/subscription.service';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 @ApiTags('Public API')
 @Controller('/public/v1')
@@ -124,10 +126,17 @@ export class PublicIntegrationsController {
   @Get('/find-slot/:id')
   async findSlotIntegration(
     @GetOrgFromRequest() org: Organization,
-    @Param('id') id?: string
+    @Param('id') id?: string,
+    @Query('after') after?: string
   ) {
     Sentry.metrics.count('public_api-request', 1);
-    return { date: await this._postsService.findFreeDateTime(org.id, id) };
+    const start = after ? dayjs.utc(after) : undefined;
+    if (start && !start.isValid()) {
+      throw new HttpException({ msg: 'after must be an ISO-8601 date' }, 400);
+    }
+    return {
+      date: await this._postsService.findFreeDateTime(org.id, id, start),
+    };
   }
 
   @Get('/posts')
